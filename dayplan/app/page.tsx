@@ -16,10 +16,11 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { MapPin, Sparkles, Route, Clock, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
+import { MapPin, Sparkles, Route, Clock, ChevronDown, ChevronUp, RotateCcw, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { parseRawList } from "./lib/parser";
 import { buildPlan } from "./lib/planner";
+import { enrichPlan } from "./lib/places";
 import { Category, Plan, ParsedItem, PlanMode } from "./types";
 import CategoryChip from "./components/CategoryChip";
 import PlanModeSelector from "./components/PlanModeSelector";
@@ -42,6 +43,7 @@ export default function Home() {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [showInput, setShowInput] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [enriching, setEnriching] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -50,29 +52,36 @@ export default function Home() {
   );
 
   // ── Generate plan ──────────────────────────────────────────────────────────
-  function handleGenerate() {
+  async function handleGenerate() {
     setGenerating(true);
-    // Slight delay for perceived "thinking" feel
-    setTimeout(() => {
-      const items = parseRawList(rawInput);
-      const dayPlan = buildPlan(items, mode);
-      setParsedItems(items);
-      setPlan(dayPlan);
-      setActiveCategories([]);
-      setShowInput(false);
-      setGenerating(false);
-    }, 600);
+    const items = parseRawList(rawInput);
+    const draft = buildPlan(items, mode);
+    setParsedItems(items);
+    setPlan(draft);           // show plan immediately with mock data
+    setActiveCategories([]);
+    setShowInput(false);
+    setGenerating(false);
+
+    // Enrich stops with real Places data in the background
+    setEnriching(true);
+    const enriched = await enrichPlan(draft, draft.startLocation);
+    setPlan(enriched);
+    setEnriching(false);
   }
 
   // ── Re-run optimise (same items, rebuild order) ────────────────────────────
-  function handleOptimise() {
+  async function handleOptimise() {
     if (!plan) return;
     setGenerating(true);
-    setTimeout(() => {
-      const newPlan = buildPlan(parsedItems, mode);
-      setPlan({ ...newPlan, stops: newPlan.stops.map((s, i) => ({ ...s, completed: plan.stops[i]?.completed ?? false })) });
-      setGenerating(false);
-    }, 400);
+    const newPlan = buildPlan(parsedItems, mode);
+    const withCompleted = { ...newPlan, stops: newPlan.stops.map((s, i) => ({ ...s, completed: plan.stops[i]?.completed ?? false })) };
+    setPlan(withCompleted);
+    setGenerating(false);
+
+    setEnriching(true);
+    const enriched = await enrichPlan(withCompleted, withCompleted.startLocation);
+    setPlan(enriched);
+    setEnriching(false);
   }
 
   // ── Drag-and-drop reorder ──────────────────────────────────────────────────
@@ -113,15 +122,18 @@ export default function Home() {
     : [];
 
   // ── Mode change regenerates if plan exists ────────────────────────────────
-  function handleModeChange(m: PlanMode) {
+  async function handleModeChange(m: PlanMode) {
     setMode(m);
     if (plan) {
       setGenerating(true);
-      setTimeout(() => {
-        const newPlan = buildPlan(parsedItems, m);
-        setPlan(newPlan);
-        setGenerating(false);
-      }, 400);
+      const newPlan = buildPlan(parsedItems, m);
+      setPlan(newPlan);
+      setGenerating(false);
+
+      setEnriching(true);
+      const enriched = await enrichPlan(newPlan, newPlan.startLocation);
+      setPlan(enriched);
+      setEnriching(false);
     }
   }
 
@@ -247,6 +259,14 @@ export default function Home() {
                 </button>
               )}
             </div>
+
+            {/* Places enrichment status */}
+            {enriching && (
+              <div className="flex items-center gap-2 text-xs text-indigo-600 bg-indigo-50 rounded-xl px-3 py-2">
+                <Loader2 size={13} className="animate-spin" />
+                Looking up real addresses…
+              </div>
+            )}
 
             {/* Route summary strip */}
             <div className="bg-indigo-600 text-white rounded-2xl px-4 py-3 flex items-center justify-between">
