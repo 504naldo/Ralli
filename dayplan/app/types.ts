@@ -37,7 +37,7 @@ export interface Stop {
   warning?: string;
 }
 
-export interface DayPlan {
+export interface Plan {
   mode: PlanMode;
   startLocation: string;
   totalEstimatedHours: number;

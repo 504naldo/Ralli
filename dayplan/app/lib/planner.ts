@@ -6,7 +6,7 @@
  *   - Google Maps Directions API for actual travel times + route optimization
  *   - Google Maps Distance Matrix API for stop grouping by proximity
  */
-import { Category, DayPlan, ParsedItem, PlanMode, Stop } from "../types";
+import { Category, Plan, ParsedItem, PlanMode, Stop } from "../types";
 
 // ─── Mock store database ────────────────────────────────────────────────────
 // TODO: Replace with Places API search query: findPlaceFromText / nearbySearch
@@ -142,7 +142,7 @@ function categoryLabel(cat: Category): string {
 
 // ─── Main planner ─────────────────────────────────────────────────────────────
 
-export function buildDayPlan(items: ParsedItem[], mode: PlanMode): DayPlan {
+export function buildPlan(items: ParsedItem[], mode: PlanMode): Plan {
   const config = MODE_CONFIG[mode];
   const warnings: string[] = [];
 

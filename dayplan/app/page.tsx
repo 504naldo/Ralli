@@ -19,8 +19,8 @@ import {
 import { MapPin, Sparkles, Route, Clock, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { parseRawList } from "./lib/parser";
-import { buildDayPlan } from "./lib/planner";
-import { Category, DayPlan, ParsedItem, PlanMode } from "./types";
+import { buildPlan } from "./lib/planner";
+import { Category, Plan, ParsedItem, PlanMode } from "./types";
 import CategoryChip from "./components/CategoryChip";
 import PlanModeSelector from "./components/PlanModeSelector";
 import ShoppingRecommendations from "./components/ShoppingRecommendations";
@@ -39,7 +39,7 @@ export default function Home() {
   const [mode, setMode] = useState<PlanMode>("balanced");
   const [parsedItems, setParsedItems] = useState<ParsedItem[]>([]);
   const [activeCategories, setActiveCategories] = useState<Category[]>([]);
-  const [plan, setPlan] = useState<DayPlan | null>(null);
+  const [plan, setPlan] = useState<Plan | null>(null);
   const [showInput, setShowInput] = useState(true);
   const [generating, setGenerating] = useState(false);
 
@@ -55,7 +55,7 @@ export default function Home() {
     // Slight delay for perceived "thinking" feel
     setTimeout(() => {
       const items = parseRawList(rawInput);
-      const dayPlan = buildDayPlan(items, mode);
+      const dayPlan = buildPlan(items, mode);
       setParsedItems(items);
       setPlan(dayPlan);
       setActiveCategories([]);
@@ -69,7 +69,7 @@ export default function Home() {
     if (!plan) return;
     setGenerating(true);
     setTimeout(() => {
-      const newPlan = buildDayPlan(parsedItems, mode);
+      const newPlan = buildPlan(parsedItems, mode);
       setPlan({ ...newPlan, stops: newPlan.stops.map((s, i) => ({ ...s, completed: plan.stops[i]?.completed ?? false })) });
       setGenerating(false);
     }, 400);
@@ -118,7 +118,7 @@ export default function Home() {
     if (plan) {
       setGenerating(true);
       setTimeout(() => {
-        const newPlan = buildDayPlan(parsedItems, m);
+        const newPlan = buildPlan(parsedItems, m);
         setPlan(newPlan);
         setGenerating(false);
       }, 400);
@@ -135,7 +135,7 @@ export default function Home() {
               <Route size={16} className="text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-gray-900 text-lg leading-none">DayPlan</h1>
+              <h1 className="font-bold text-gray-900 text-lg leading-none">Ralli</h1>
               <p className="text-[10px] text-gray-400 leading-none">Tsawwassen, BC</p>
             </div>
           </div>

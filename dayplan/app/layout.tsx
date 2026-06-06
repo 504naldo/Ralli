@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DayPlan — Your Efficient Day Out",
-  description: "Turn a messy errand list into a smart day plan, starting from Tsawwassen BC.",
+  title: "Ralli — Your Efficient Day Out",
+  description: "Turn a messy errand list into a smart day plan with Ralli, starting from Tsawwassen BC.",
 };
 
 export const viewport: Viewport = {
