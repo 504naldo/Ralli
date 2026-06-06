@@ -25,6 +25,7 @@ import { Category, Plan, ParsedItem, PlanMode } from "./types";
 import CategoryChip from "./components/CategoryChip";
 import PlanModeSelector from "./components/PlanModeSelector";
 import ShoppingRecommendations from "./components/ShoppingRecommendations";
+import SharePanel from "./components/SharePanel";
 import StopCard from "./components/StopCard";
 import WarningBanner from "./components/WarningBanner";
 import ProgressBar from "./components/ProgressBar";
@@ -307,6 +308,9 @@ export default function Home() {
 
             {/* Shopping recommendations */}
             <ShoppingRecommendations items={parsedItems} />
+
+            {/* Share & Export */}
+            <SharePanel plan={plan} />
 
             {/* Reset */}
             <button
