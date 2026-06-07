@@ -17,10 +17,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { MapPin, Sparkles, Route, Clock, ChevronDown, ChevronUp, RotateCcw, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { parseRawList } from "./lib/parser";
 import { buildPlan } from "./lib/planner";
 import { enrichPlan } from "./lib/places";
+import { loadState, saveState } from "./lib/storage";
 import { Category, Plan, ParsedItem, PlanMode } from "./types";
 import CategoryChip from "./components/CategoryChip";
 import PlanModeSelector from "./components/PlanModeSelector";
@@ -45,6 +46,26 @@ export default function Home() {
   const [showInput, setShowInput] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [enriching, setEnriching] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // ── Restore saved plan on first load ──────────────────────────────────────
+  useEffect(() => {
+    const saved = loadState();
+    if (saved) {
+      setRawInput(saved.rawInput);
+      setMode(saved.mode);
+      setParsedItems(saved.parsedItems);
+      setPlan(saved.plan);
+      if (saved.plan) setShowInput(false);
+    }
+    setHydrated(true);
+  }, []);
+
+  // ── Persist on every change (after initial restore completes) ─────────────
+  useEffect(() => {
+    if (!hydrated) return;
+    saveState({ rawInput, mode, plan, parsedItems });
+  }, [hydrated, rawInput, mode, plan, parsedItems]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
