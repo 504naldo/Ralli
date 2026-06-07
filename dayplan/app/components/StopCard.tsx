@@ -102,23 +102,30 @@ export default function StopCard({ stop, index, onToggleComplete, onNotesChange 
         {/* Expanded content */}
         {expanded && (
           <div className="ml-8 mt-3 space-y-3">
-            {/* Items list */}
-            <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Items to Buy</p>
-              <ul className="space-y-1.5">
-                {stop.items.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 flex-shrink-0" />
-                    <div>
-                      <span className="text-sm text-gray-800">{item.name}</span>
-                      {item.note && (
-                        <p className="text-xs text-indigo-600 mt-0.5 italic">{item.note}</p>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* Items list (shopping stops) or purpose (food / leisure stops) */}
+            {stop.items.length > 0 ? (
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Items to Buy</p>
+                <ul className="space-y-1.5">
+                  {stop.items.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 flex-shrink-0" />
+                      <div>
+                        <span className="text-sm text-gray-800">{item.name}</span>
+                        {item.note && (
+                          <p className="text-xs text-indigo-600 mt-0.5 italic">{item.note}</p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : stop.purpose ? (
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Purpose</p>
+                <p className="text-sm text-gray-700">{stop.purpose}</p>
+              </div>
+            ) : null}
 
             {/* Notes */}
             <div>

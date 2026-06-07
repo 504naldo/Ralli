@@ -75,7 +75,11 @@ function formatPlanAsText(plan: Plan): string {
   plan.stops.forEach((stop, i) => {
     lines.push(`${i + 1}. ${stop.name}  —  Arrive ${stop.suggestedArrival}`);
     lines.push(`   📍 ${stop.address}`);
-    lines.push(`   Items: ${stop.items.map((item) => item.name).join(", ")}`);
+    if (stop.items.length > 0) {
+      lines.push(`   Items: ${stop.items.map((item) => item.name).join(", ")}`);
+    } else if (stop.purpose) {
+      lines.push(`   Purpose: ${stop.purpose}`);
+    }
     if (stop.notes && stop.notes !== stop.category) lines.push(`   Notes: ${stop.notes}`);
     lines.push("");
   });
@@ -89,6 +93,16 @@ export function buildMailtoLink(plan: Plan): string {
   const subject = `My Ralli Day Plan — ${plan.startLocation}`;
   const body = formatPlanAsText(plan);
   return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+/** Plain-text description for an event: items list for shopping stops, purpose for visit-only stops. */
+function stopDescription(stop: Stop, lineSeparator: string): string {
+  if (stop.items.length > 0) {
+    return stop.items
+      .map((i) => `• ${i.name}${i.note ? ` — ${i.note}` : ""}`)
+      .join(lineSeparator);
+  }
+  return stop.purpose ?? "";
 }
 
 // ─── Google Calendar ──────────────────────────────────────────────────────────
@@ -107,9 +121,7 @@ export function buildGoogleCalendarUrl(stop: Stop): string {
   const start = toDateWithTime(stop.suggestedArrival);
   const end = new Date(start.getTime() + stop.estimatedMinutes * 60 * 1000);
 
-  const details = stop.items
-    .map((i) => `• ${i.name}${i.note ? ` — ${i.note}` : ""}`)
-    .join("\n");
+  const details = stopDescription(stop, "\n");
 
   const params = new URLSearchParams({
     action: "TEMPLATE",
@@ -140,9 +152,7 @@ function escapeIcs(str: string): string {
 function buildIcsEvent(stop: Stop, uid: string): string {
   const start = toDateWithTime(stop.suggestedArrival);
   const end = new Date(start.getTime() + stop.estimatedMinutes * 60 * 1000);
-  const description = stop.items
-    .map((i) => `• ${i.name}${i.note ? ` — ${i.note}` : ""}`)
-    .join("\\n");
+  const description = stopDescription(stop, "\\n");
 
   return [
     "BEGIN:VEVENT",

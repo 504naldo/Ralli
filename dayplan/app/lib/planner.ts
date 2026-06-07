@@ -140,6 +140,15 @@ function categoryLabel(cat: Category): string {
   return labels[cat];
 }
 
+function visitPurpose(category: Category, hour: number): string {
+  if (category === "food") {
+    if (hour < 11) return "Breakfast stop";
+    if (hour < 15) return "Lunch stop";
+    return "Dinner stop";
+  }
+  return "Browse & shop for leisure";
+}
+
 // ─── Main planner ─────────────────────────────────────────────────────────────
 
 export function buildPlan(items: ParsedItem[], mode: PlanMode): Plan {
@@ -210,16 +219,22 @@ export function buildPlan(items: ParsedItem[], mode: PlanMode): Plan {
       }
     }
 
+    // Food/leisure stops are visited, not shopped at — don't list the venue itself as an "item"
+    const isVisitOnly = category === "food" || category === "leisure";
+
     stops.push({
       id: `stop-${idx}`,
       name: mock?.name ?? key,
       category,
       address: mock?.address ?? "Address pending — connect Places API",
-      items: storeItems.map((item) => ({
-        itemId: item.id,
-        name: item.name,
-        note: item.productNote,
-      })),
+      items: isVisitOnly
+        ? []
+        : storeItems.map((item) => ({
+            itemId: item.id,
+            name: item.name,
+            note: item.productNote,
+          })),
+      purpose: isVisitOnly ? visitPurpose(category, currentHour) : undefined,
       estimatedMinutes: visitMin + config.bufferMin,
       suggestedArrival: arrivalTime,
       notes: categoryLabel(category),

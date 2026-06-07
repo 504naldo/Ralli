@@ -28,6 +28,7 @@ export interface Stop {
   category: Category;
   address: string; // placeholder until Places API is connected
   items: StopItem[];
+  purpose?: string; // for non-shopping stops (food, leisure) — what the visit is for
   estimatedMinutes: number;
   suggestedArrival: string;
   notes: string;
