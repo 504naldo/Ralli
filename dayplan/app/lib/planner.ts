@@ -239,8 +239,14 @@ export function buildPlan(items: ParsedItem[], mode: PlanMode): Plan {
   const totalHours = currentHour - config.startHour + currentMinute / 60;
 
   if (totalHours > config.maxHours) {
+    const suggestion =
+      mode === "fullday"
+        ? "consider removing a few stops to make the day more manageable."
+        : mode === "balanced"
+        ? "consider switching to Full Day mode or removing stops."
+        : "consider switching to Balanced or Full Day mode, or removing stops.";
     warnings.push(
-      `This plan runs approximately ${totalHours.toFixed(1)} hours — consider switching to Full Day mode or removing stops.`
+      `This plan runs approximately ${totalHours.toFixed(1)} hours — ${suggestion}`
     );
   }
 
